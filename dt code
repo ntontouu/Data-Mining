@@ -1,0 +1,68 @@
+# ΕΙΣΑΓΩΓΗ ΑΠΑΡΑΙΤΗΤΩΝ ΒΙΒΛΙΟΘΗΚΩΝ
+import pandas as pd
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import accuracy_score, f1_score, recall_score, precision_score, classification_report, confusion_matrix
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.preprocessing import MinMaxScaler
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# ΦΟΡΤΩΣΗ ΤΟΥ ΣΥΝΟΛΟΥ ΔΕΔΟΜΕΝΩΝ
+data = pd.read_csv('csv_result-Training Dataset.csv')
+data.head()
+
+# ΠΡΟΕΤΟΙΜΑΣΙΑ ΔΕΔΟΜΕΝΩΝ: ΑΦΑΙΡΕΣΗ ΤΗΣ ΣΤΗΛΗΣ 'ID'
+data = data.drop('id', axis=1)
+
+# ΕΛΕΓΧΟΣ ΚΑΙ ΑΦΑΙΡΕΣΗ ΕΛΛΙΠΩΝ ΣΗΜΕΙΩΝ
+data = data.dropna()
+
+# ΔΙΑΧΩΡΙΣΜΟΣ ΤΩΝ ΔΕΔΟΜΕΝΩΝ ΣΕ ΧΑΡΑΚΤΗΡΙΣΤΙΚΑ (X) ΚΑΙ ΣΤΟΧΟ (y)
+X = data.drop('Result', axis=1)
+y = data['Result']
+
+# ΚΑΝΟΝΙΚΟΠΟΙΗΣΗ ΤΩΝ ΧΑΡΑΚΤΗΡΙΣΤΙΚΩΝ
+scaler = MinMaxScaler()
+X_normalized = scaler.fit_transform(X)
+
+# ΔΙΑΧΩΡΙΣΜΟΣ ΤΟΥ ΣΥΝΟΛΟΥ ΔΕΔΟΜΕΝΩΝ ΣΕ ΣΥΝΟΛΑ ΕΚΠΑΙΔΕΥΣΗΣ ΚΑΙ ΔΟΚΙΜΗΣ
+X_train, X_test, y_train, y_test = train_test_split(X_normalized, y, test_size=0.2, random_state=42)
+
+# ΑΡΧΙΚΟΠΟΙΗΣΗ ΚΑΙ ΕΚΠΑΙΔΕΥΣΗ ΤΟΥ ΤΑΞΙΝΟΜΗΤΗ ΔΕΝΔΡΟΥ ΑΠΟΦΑΣΕΩΝ
+clf = DecisionTreeClassifier(max_depth=30, random_state=1)
+
+# Χρήση διασταυρούμενης επικύρωσης
+cv_scores = cross_val_score(clf, X_train, y_train, cv=10)
+print(f'Αξιολόγηση μέσω διασταυρούμενης επικύρωσης: {cv_scores}')
+print(f'Μέση Ακρίβεια από διασταυρούμενη επικύρωση: {cv_scores.mean():.3f}')
+
+# Κατάρτιση του μοντέλου Decision Tree με τα δεδομένα εκπαίδευσης
+clf.fit(X_train, y_train)
+
+# ΠΡΟΒΛΕΨΕΙΣ ΓΙΑ ΤΟ ΣΥΝΟΛΟ ΔΟΚΙΜΗΣ
+y_pred_dt = clf.predict(X_test)
+
+# ΑΞΙΟΛΟΓΗΣΗ ΤΟΥ ΜΟΝΤΕΛΟΥ ΔΕΝΔΡΟΥ ΑΠΟΦΑΣΕΩΝ
+accuracy_dt = accuracy_score(y_test, y_pred_dt)
+f1_dt = f1_score(y_test, y_pred_dt)
+recall_dt = recall_score(y_test, y_pred_dt)
+precision_dt = precision_score(y_test, y_pred_dt)
+
+# ΕΚΤΥΠΩΣΗ ΤΩΝ ΜΕΤΡΙΚΩΝ ΑΞΙΟΛΟΓΗΣΗΣ ΓΙΑ ΤΟ ΔΕΝΤΡΟ ΑΠΟΦΑΣΕΩΝ
+print(f'ΑΚΡΙΒΕΙΑ ΔΕΝΤΡΟΥ ΑΠΟΦΑΣΕΩΝ: {accuracy_dt:.3f}')
+print(f'F1 SCORE ΔΕΝΤΡΟΥ ΑΠΟΦΑΣΕΩΝ: {f1_dt:.3f}')
+print(f'ΑΝΑΚΛΗΣΗ ΔΕΝΤΡΟΥ ΑΠΟΦΑΣΕΩΝ: {recall_dt:.3f}')
+print(f'ΑΚΡΙΒΗΣ ΔΕΝΤΡΟΥ ΑΠΟΦΑΣΕΩΝ: {precision_dt:.3f}')
+print('ΑΝΑΦΟΡΑ ΤΑΞΙΝΟΜΗΣΗΣ ΔΕΝΤΡΟΥ ΑΠΟΦΑΣΕΩΝ:')
+print(classification_report(y_test, y_pred_dt))
+
+# Υπολογισμός πίνακα σύγχυσης
+conf_matrix_dt = confusion_matrix(y_test, y_pred_dt)
+
+# Οπτικοποίηση του πίνακα σύγχυσης
+plt.figure(figsize=(8, 6))
+sns.heatmap(conf_matrix_dt, annot=True, fmt='d', cmap='Blues', cbar=False)
+plt.title('Confusion Matrix - Decision Tree')
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.show()
