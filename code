@@ -1,0 +1,78 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# ΣΥΝΑΡΤΗΣΗ ΓΙΑ ΤΟΝ ΥΠΟΛΟΓΙΣΜΟ ΤΗΣ ΕΥΚΛΕΙΔΕΙΑΣ ΑΠΟΣΤΑΣΗΣ
+def euclidean_distance(x, y):
+    return np.linalg.norm(x - y)
+
+# ΣΥΝΑΡΤΗΣΗ K-MEANS
+def mykmeans(TrainData, K, threshold=0.001, max_iters=100):
+    # ΕΠΙΛΟΓΗ ΤΥΧΑΙΩΝ ΚΕΝΤΡΩΝ ΓΙΑ ΤΙΣ ΣΥΣΤΑΔΕΣ
+    n_samples, n_features = TrainData.shape
+    centers = TrainData[np.random.choice(n_samples, K, replace=False)]
+    
+    # ΛΙΣΤΑ ΓΙΑ ΤΑ SSE
+    sse_list = []
+    
+    for _ in range(max_iters):
+        # ΑΝΑΘΕΣΗ ΤΩΝ ΔΕΔΟΜΕΝΩΝ ΣΤΙΣ ΣΥΣΤΑΔΕΣ (ΜΕ ΒΑΣΗ ΤΗΝ ΚΟΝΤΙΝΟΤΕΡΗ ΑΠΟΣΤΑΣΗ)
+        labels = np.array([np.argmin([euclidean_distance(x, center) for center in centers]) for x in TrainData])
+        
+        # ΥΠΟΛΟΓΙΣΜΟΣ ΝΕΩΝ ΚΕΝΤΡΩΝ
+        new_centers = np.array([TrainData[labels == i].mean(axis=0) for i in range(K)])
+        
+        # ΥΠΟΛΟΓΙΣΜΟΣ ΤΟΥ SSE
+        sse = np.sum([np.sum((TrainData[labels == i] - centers[i])**2) for i in range(K)])
+        sse_list.append(sse)
+        
+        # ΕΝΗΜΕΡΩΣΗ ΤΩΝ ΚΕΝΤΡΩΝ
+        if np.linalg.norm(new_centers - centers) < threshold:
+            break
+        centers = new_centers
+
+        # ΟΠΤΙΚΟΠΟΙΗΣΗ ΤΟΥ K-MEANS
+        plt.clf()  # ΚΑΘΑΡΙΖΕΙ ΤΟ ΠΡΟΗΓΟΥΜΕΝΟ ΔΙΑΓΡΑΜΜΑ
+        for i in range(K):
+            plt.scatter(TrainData[labels == i, 0], TrainData[labels == i, 1], label=f'Cluster {i+1}')
+        plt.scatter(centers[:, 0], centers[:, 1], marker='+', color='black', s=200, label='Centroids')
+        plt.legend()
+        plt.title(f'K-Means - Iteration {_+1}')
+        plt.pause(0.1)
+    
+    plt.show()
+    
+    # ΕΠΙΣΤΡΟΦΗ ΤΩΝ ΚΕΝΤΡΩΝ ΚΑΙ ΤΟΥ SSE
+    return centers, sse_list
+
+# ΔΗΜΙΟΥΡΓΙΑ ΤΩΝ ΔΕΔΟΜΕΝΩΝ
+np.random.seed(0)
+
+# ΟΡΙΣΜΕΝΑ ΧΑΡΑΚΤΗΡΙΣΤΙΚΑ ΓΙΑ ΤΙΣ 3 ΚΑΤΑΝΟΜΕΣ GAUSS
+mu1 = np.array([4, 0])
+sigma1 = np.array([[0.29, 0.4], [0.4, 4]])
+
+mu2 = np.array([5, 7])
+sigma2 = np.array([[0.29, 0.4], [0.4, 0.9]])
+
+mu3 = np.array([7, 4])
+sigma3 = np.array([[0.64, 0], [0, 0.64]])
+
+# ΔΗΜΙΟΥΡΓΙΑ 150 ΣΗΜΕΙΩΝ
+X1 = np.random.multivariate_normal(mu1, sigma1, 50)
+X2 = np.random.multivariate_normal(mu2, sigma2, 50)
+X3 = np.random.multivariate_normal(mu3, sigma3, 50)
+
+TrainData = np.vstack([X1, X2, X3])
+
+# ΚΛΗΣΗ ΤΗΣ ΣΥΝΑΡΤΗΣΗΣ K-MEANS
+K = 3
+centers, sse_list = mykmeans(TrainData, K)
+
+# ΟΠΤΙΚΟΠΟΙΗΣΗ ΤΟΥ SSE ΜΕ ΤΗΝ ΠΡΟΟΔΟ ΤΩΝ ΕΠΑΝΑΛΗΨΕΩΝ
+plt.figure()
+plt.plot(range(1, len(sse_list) + 1), sse_list, marker='o')
+plt.title('Sum of Squared Errors (SSE) over Iterations')
+plt.xlabel('Iteration')
+plt.ylabel('SSE')
+plt.grid(True)
+plt.show()
