@@ -66,7 +66,7 @@ To test the algorithm, 3 distinct Gaussian distributions are generated using `np
 ---
 
 ## 📝 Author & Academic Use
-- **Student:** Maria Alexandra Ndontou (ΜΑΡΙΑ ΑΛΕΞΑΝΔΡΑ ΝΤΟΝΤΟΥ)
+- **Student:** Maria Alexandra Ntontou (ΜΑΡΙΑ ΑΛΕΞΑΝΔΡΑ ΝΤΟΝΤΟΥ)
 - **Student ID:** 2799
 - **Institution:** University of Ioannina — Department of Informatics and Telecommunications
 - **Course:** Data Mining (Εξόρυξη Δεδομένων) — 2nd Semester Project
