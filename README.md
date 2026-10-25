@@ -73,7 +73,7 @@ Based on 10-fold cross-validation and confusion matrix analysis:
 ---
 
 ## 📝 Author & Academic Use
-- **Student:** Maria Alexandra Ndontou (ΜΑΡΙΑ ΑΛΕΞΑΝΔΡΑ ΝΤΟΝΤΟΥ)
+- **Student:** Maria Alexandra Ntontou (ΜΑΡΙΑ ΑΛΕΞΑΝΔΡΑ ΝΤΟΝΤΟΥ)
 - **Student ID:** 2799
 - **Institution:** University of Ioannina — Department of Informatics and Telecommunications
 - **Course:** Data Mining (Εξόρυξη Δεδομένων) — 1st Semester Project
