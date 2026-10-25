@@ -1,0 +1,68 @@
+# ΕΙΣΑΓΩΓΗ ΑΠΑΡΑΙΤΗΤΩΝ ΒΙΒΛΙΟΘΗΚΩΝ
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score, f1_score, recall_score, precision_score, classification_report, confusion_matrix
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.preprocessing import MinMaxScaler
+
+# ΦΟΡΤΩΣΗ ΤΟΥ ΣΥΝΟΛΟΥ ΔΕΔΟΜΕΝΩΝ
+data = pd.read_csv('csv_result-Training Dataset.csv')
+data.head()
+
+# ΠΡΟΕΤΟΙΜΑΣΙΑ ΔΕΔΟΜΕΝΩΝ: ΑΦΑΙΡΕΣΗ ΤΗΣ ΣΤΗΛΗΣ 'ID'
+data = data.drop('id', axis=1)
+
+# ΕΛΕΓΧΟΣ ΚΑΙ ΑΦΑΙΡΕΣΗ ΕΛΛΙΠΩΝ ΣΗΜΕΙΩΝ
+data = data.dropna()  # Ή ΧΡΗΣΗ IMPUTATION ΑΝ ΧΡΕΙΑΖΕΤΑΙ
+
+# ΔΙΑΧΩΡΙΣΜΟΣ ΤΩΝ ΔΕΔΟΜΕΝΩΝ ΣΕ ΧΑΡΑΚΤΗΡΙΣΤΙΚΑ (X) ΚΑΙ ΣΤΟΧΟ (y)
+X = data.drop('Result', axis=1)  # ΧΑΡΑΚΤΗΡΙΣΤΙΚΑ
+y = data['Result']  # ΣΤΟΧΟΣ
+
+# ΚΑΝΟΝΙΚΟΠΟΙΗΣΗ ΤΩΝ ΧΑΡΑΚΤΗΡΙΣΤΙΚΩΝ
+scaler = MinMaxScaler()  # ΔΗΜΙΟΥΡΓΙΑ ΤΟΥ SCALER
+X_normalized = scaler.fit_transform(X)  # ΚΑΝΟΝΙΚΟΠΟΙΗΣΗ
+
+# ΔΙΑΧΩΡΙΣΜΟΣ ΤΟΥ ΣΥΝΟΛΟΥ ΔΕΔΟΜΕΝΩΝ ΣΕ ΣΥΝΟΛΑ ΕΚΠΑΙΔΕΥΣΗΣ ΚΑΙ ΔΟΚΙΜΗΣ
+X_train, X_test, y_train, y_test = train_test_split(X_normalized, y, test_size=0.2, random_state=42)
+
+# ΑΡΧΙΚΟΠΟΙΗΣΗ ΚΑΙ ΕΚΠΑΙΔΕΥΣΗ ΤΟΥ ΤΑΞΙΝΟΜΗΤΗ k-NN
+knn = KNeighborsClassifier(n_neighbors=10)  # ΕΠΙΛΟΓΗ ΤΗΣ ΤΙΜΗΣ Κ = 10
+
+# Χρήση διασταυρούμενης επικύρωσης
+cv_scores_knn = cross_val_score(knn, X_train, y_train, cv=10)  # 10-fold cross-validation
+print(f'Αξιολόγηση μέσω διασταυρούμενης επικύρωσης (K=10): {cv_scores_knn}')
+print(f'Μέση Ακρίβεια από διασταυρούμενη επικύρωση: {cv_scores_knn.mean():.3f}')
+
+# Κατάρτιση του μοντέλου k-NN με τα δεδομένα εκπαίδευσης
+knn.fit(X_train, y_train)
+
+# ΠΡΟΒΛΕΨΕΙΣ ΓΙΑ ΤΟ ΣΥΝΟΛΟ ΔΟΚΙΜΗΣ
+y_pred_knn = knn.predict(X_test)
+
+# ΑΞΙΟΛΟΓΗΣΗ ΤΟΥ ΜΟΝΤΕΛΟΥ K-NN
+accuracy_knn = accuracy_score(y_test, y_pred_knn)
+f1_knn = f1_score(y_test, y_pred_knn)
+recall_knn = recall_score(y_test, y_pred_knn)
+precision_knn = precision_score(y_test, y_pred_knn)
+
+# ΕΚΤΥΠΩΣΗ ΤΩΝ ΜΕΤΡΙΚΩΝ ΑΞΙΟΛΟΓΗΣΗΣ ΓΙΑ ΤΟ k-NN
+print(f'ΑΚΡΙΒΕΙΑ K-NN: {accuracy_knn:.3f}')
+print(f'F1 SCORE K-NN: {f1_knn:.3f}')
+print(f'ΑΝΑΚΛΗΣΗ K-NN: {recall_knn:.3f}')
+print(f'ΑΚΡΙΒΗΣ K-NN: {precision_knn:.3f}')
+print('ΑΝΑΦΟΡΑ ΤΑΞΙΝΟΜΗΣΗΣ K-NN:')
+print(classification_report(y_test, y_pred_knn))
+
+# ΥΠΟΛΟΓΙΣΜΟΣ ΤΟΥ ΠΙΝΑΚΑ ΣΥΓΧΥΣΗΣ
+conf_matrix_knn = confusion_matrix(y_test, y_pred_knn)
+
+# ΟΠΤΙΚΟΠΟΙΗΣΗ ΤΟΥ ΠΙΝΑΚΑ ΣΥΓΧΥΣΗΣ
+plt.figure(figsize=(8, 6))
+sns.heatmap(conf_matrix_knn, annot=True, fmt='d', cmap='Blues', xticklabels=['Phishing', 'Non-Phishing'], yticklabels=['Phishing', 'Non-Phishing'])
+plt.xlabel('Προβλεπόμενες Τιμές')
+plt.ylabel('Πραγματικές Τιμές')
+plt.title('Πίνακας Σύγχυσης - k-NN')
+plt.show()
