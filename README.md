@@ -12,4 +12,4 @@ Repository containing semester projects for the **Data Mining** course.
 - **[`assignment-2-kmeans`](https://github.com/ntontouu/Data-Mining/tree/assignment-2-kmeans)**: Assignment 2 — Custom k-Means Clustering Implementation.
 
 ---
-**Author:** Maria Alexandra Ndontou (2799)
+**Author:** Maria Alexandra Ntontou (2799)
